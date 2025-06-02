@@ -1,0 +1,96 @@
+create database RBDB;
+create schema RB_SC;
+
+
+use database RBDB;
+use database RB_SC;
+
+USE ROLE SECURITYADMIN;
+-- Step 1: Create a custom role
+-- --------------------------------------------
+CREATE ROLE Data_Engineer;
+
+-- --------------------------------------------
+-- Step 2: Create a user and assign the role
+-- --------------------------------------------
+CREATE USER hema_sharma 
+PASSWORD = 'Snowflake@123' 
+DEFAULT_ROLE = Data_Engineer 
+MUST_CHANGE_PASSWORD = FALSE;
+
+GRANT ROLE Data_Engineer TO USER hema_sharma;
+
+-- Optional: Assign role to another user (e.g., an existing one)
+GRANT ROLE Data_Engineer TO USER MADHAV ;
+REVOKE ROLE Data_Engineer FROM USER MADHAV;
+
+
+-- Step 3: Grant basic access privileges
+-- --------------------------------------------
+
+-- Grant access to database and schema
+GRANT USAGE ON DATABASE RBDB TO ROLE Data_Engineer;
+GRANT USAGE ON SCHEMA RBDB.RB_SC TO ROLE Data_Engineer;
+
+-- Grant SELECT on existing and future tables
+GRANT SELECT ON ALL TABLES IN SCHEMA RBDB.RB_SC TO ROLE Data_Engineer;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA RBDB.RB_SC TO ROLE Data_Engineer;
+
+-- --------------------------------------------
+-- Step 4: Privilege test (after login)
+-- --------------------------------------------
+-- When the user logs in with role Data_Engineer, they will only be able to query existing tables.
+-- They will NOT be able to CREATE or DROP tables, schemas, or databases at this point.
+
+create table rbac_test (user_name varchar(50),
+user_role varchar(5));
+--SQL access control error:
+--Insufficient privileges to operate on schema 'RB_SC'
+
+-- --------------------------------------------
+-- Step 5: Grant full DDL/DML access (optional)
+-- --------------------------------------------
+GRANT USAGE ON DATABASE RBDB TO ROLE SECURITYADMIN;
+GRANT USAGE ON SCHEMA RBDB.RB_SC TO ROLE SECURITYADMIN;
+-- Allows creation, deletion, modification of all existing and future objects
+GRANT ALL PRIVILEGES ON DATABASE  RBDB TO ROLE Data_Engineer;  -- database-level (existing)
+GRANT ALL PRIVILEGES ON SCHEMA  RBDB.RB_SC TO ROLE Data_Engineer;  -- schema-level (existing)
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA  RBDB.RB_SC TO ROLE Data_Engineer;  -- existing tables
+GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA  RBDB.RB_SC TO ROLE Data_Engineer;  -- future tables
+
+
+-- Optional: Grant on views and sequences if applicable
+GRANT ALL PRIVILEGES ON FUTURE VIEWS IN SCHEMA RBDB.RB_SC TO ROLE Data_Engineer;
+GRANT ALL PRIVILEGES ON FUTURE SEQUENCES IN SCHEMA RBDB.RB_SC TO ROLE Data_Engineer;
+
+
+-- --------------------------------------------
+-- Step 6: Grant database and schema creation rights
+-- --------------------------------------------
+
+-- Allow the role to create new databases (and thereby new schemas/tables/views)
+issue --Grant not executed: Insufficient privileges.
+Snowflake administrator to either:
+Grant ACCOUNTADMIN to use MADHAV; or --USE ROLE ACCOUNTADMIN;
+GRANT CREATE DATABASE ON ACCOUNT TO ROLE Data_Engineer;
+-- Allow schema creation inside a specific database
+GRANT CREATE SCHEMA ON DATABASE RBDB TO ROLE Data_Engineer;
+
+-- --------------------------------------------
+-- Step 7: Additional privilege recommendations (optional)
+-- --------------------------------------------
+
+-- If Data_Engineer should manage warehouses:
+-- GRANT USAGE, OPERATE ON WAREHOUSE <warehouse_name> TO ROLE Data_Engineer;
+
+-- If Data_Engineer should manage other roles or users (requires SECURITYADMIN or custom role strategy)
+-- GRANT ROLE <another_role> TO ROLE Data_Engineer;
+
+-- --------------------------------------------
+-- Step 8: Verification commands
+-- --------------------------------------------
+SHOW ROLES;
+SHOW USERS;
+SHOW GRANTS TO USER hema_sharma;
+SHOW GRANTS TO ROLE Data_Engineer;
+SHOW GRANTS to ROLE SECURITYADMIN;
