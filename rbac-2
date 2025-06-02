@@ -1,0 +1,422 @@
+-- =====================================================
+-- PATIENT RECORDS DATABASE WITH RBAC IN SNOWFLAKE
+-- =====================================================
+
+-- Step 1: Create database and schema
+CREATE DATABASE IF NOT EXISTS HOSPITAL_MANAGEMENT;
+USE DATABASE HOSPITAL_MANAGEMENT;
+
+CREATE SCHEMA IF NOT EXISTS PATIENT_DATA;
+USE SCHEMA PATIENT_DATA;
+CREATE OR REPLACE TABLE Patient_Records (
+    Patient_ID INT AUTOINCREMENT PRIMARY KEY,
+    Patient_Name VARCHAR(255) NOT NULL,
+    Phone_Number VARCHAR(20) NOT NULL,
+    Diagnosis VARCHAR(500) NOT NULL,
+    Is_Critical VARCHAR(3) NOT NULL,
+    Assigned_Doctor VARCHAR(100) NOT NULL,
+    Created_Date TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP(),
+    Updated_Date TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
+
+-- Step 3: Insert sample records with the specified requirements
+INSERT INTO Patient_Records (Patient_Name, Phone_Number, Diagnosis, Is_Critical, Assigned_Doctor) VALUES 
+-- Dr. Smith's patients
+('John Anderson', '555-0123', 'Acute Myocardial Infarction', 'YES', 'DR_SMITH'),
+('Sarah Williams', '555-0124', 'Hypertension', 'NO', 'DR_SMITH'),
+('Michael Brown', '555-0125', 'Type 2 Diabetes', 'NO', 'DR_SMITH'),
+('Emily Davis', '555-0126', 'Severe Pneumonia', 'YES', 'DR_SMITH'),
+
+-- Dr. Verma's patients
+('Robert Johnson', '555-0127', 'Stroke', 'YES', 'DR_VERMA'),
+('Lisa Garcia', '555-0128', 'Migraine', 'NO', 'DR_VERMA'),
+('David Martinez', '555-0129', 'Appendicitis', 'YES', 'DR_VERMA'),
+('Jennifer Wilson', '555-0130', 'Common Cold', 'NO', 'DR_VERMA');
+
+-- Step 4: Display the inserted data to verify
+SELECT 'Sample Data Successfully Inserted' AS STATUS;
+
+SELECT * FROM Patient_Records ORDER BY Assigned_Doctor, Is_Critical DESC;
+
+-- =====================================================
+-- ROLE-BASED ACCESS CONTROL (RBAC) IMPLEMENTATION
+-- =====================================================
+
+-- Step 5: Create custom roles for the doctors
+CREATE ROLE IF NOT EXISTS DR_SMITH;
+CREATE ROLE IF NOT EXISTS DR_VERMA;
+
+
+CREATE USER IF NOT EXISTS DRSMITH_USER
+    PASSWORD = 'Smith_SecurePass123!'
+    DEFAULT_ROLE = DR_SMITH
+    DEFAULT_WAREHOUSE = COMPUTE_WH
+    DEFAULT_NAMESPACE = HOSPITAL_MANAGEMENT.PATIENT_DATA
+    COMMENT = 'User account for Dr. Smith';
+
+CREATE USER IF NOT EXISTS DRVERMA_USER
+    PASSWORD = 'Verma_SecurePass123!'
+    DEFAULT_ROLE = DR_VERMA
+    DEFAULT_WAREHOUSE = COMPUTE_WH
+    DEFAULT_NAMESPACE = HOSPITAL_MANAGEMENT.PATIENT_DATA
+    COMMENT = 'User account for Dr. Verma';
+
+
+    -- Step 7: Grant roles to users
+GRANT ROLE DR_SMITH TO USER DRSMITH_USER;
+GRANT ROLE DR_VERMA TO USER DRVERMA_USER;
+
+-- Step 8: Grant minimum required privileges to roles
+-- Database level privileges
+GRANT USAGE ON DATABASE HOSPITAL_MANAGEMENT TO ROLE DR_SMITH;
+GRANT USAGE ON DATABASE HOSPITAL_MANAGEMENT TO ROLE DR_VERMA;
+
+-- Schema level privileges
+GRANT USAGE ON SCHEMA HOSPITAL_MANAGEMENT.PATIENT_DATA TO ROLE DR_SMITH;
+GRANT USAGE ON SCHEMA HOSPITAL_MANAGEMENT.PATIENT_DATA TO ROLE DR_VERMA;
+
+-- Table level privileges (minimum required)
+GRANT SELECT ON TABLE HOSPITAL_MANAGEMENT.PATIENT_DATA.Patient_Records TO ROLE DR_SMITH;
+GRANT SELECT ON TABLE HOSPITAL_MANAGEMENT.PATIENT_DATA.Patient_Records TO ROLE DR_VERMA;
+
+-- Warehouse privileges (required for query execution)
+GRANT USAGE ON WAREHOUSE COMPUTE_WH TO ROLE DR_SMITH;
+GRANT USAGE ON WAREHOUSE COMPUTE_WH TO ROLE DR_VERMA;
+
+
+-- =====================================================
+-- PATIENT RECORDS DATABASE WITH RBAC IN SNOWFLAKE
+-- =====================================================
+
+-- Step 1: Create database and schema
+CREATE DATABASE IF NOT EXISTS HOSPITAL_MANAGEMENT;
+USE DATABASE HOSPITAL_MANAGEMENT;
+
+CREATE SCHEMA IF NOT EXISTS PATIENT_DATA;
+USE SCHEMA PATIENT_DATA;
+
+-- Step 2: Create the Patient_Records table with Snowflake-compatible syntax
+CREATE OR REPLACE TABLE Patient_Records (
+    Patient_ID INT AUTOINCREMENT PRIMARY KEY,
+    Patient_Name VARCHAR(255) NOT NULL,
+    Phone_Number VARCHAR(20) NOT NULL,
+    Diagnosis VARCHAR(500) NOT NULL,
+    Is_Critical VARCHAR(3) NOT NULL,
+    Assigned_Doctor VARCHAR(100) NOT NULL,
+    Created_Date TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP(),
+    Updated_Date TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
+
+-- Step 3: Insert sample records with the specified requirements
+INSERT INTO Patient_Records (Patient_Name, Phone_Number, Diagnosis, Is_Critical, Assigned_Doctor) VALUES
+-- Dr. Smith's patients
+('John Anderson', '555-0123', 'Acute Myocardial Infarction', 'YES', 'DR_SMITH'),
+('Sarah Williams', '555-0124', 'Hypertension', 'NO', 'DR_SMITH'),
+('Michael Brown', '555-0125', 'Type 2 Diabetes', 'NO', 'DR_SMITH'),
+('Emily Davis', '555-0126', 'Severe Pneumonia', 'YES', 'DR_SMITH'),
+
+-- Dr. Verma's patients
+('Robert Johnson', '555-0127', 'Stroke', 'YES', 'DR_VERMA'),
+('Lisa Garcia', '555-0128', 'Migraine', 'NO', 'DR_VERMA'),
+('David Martinez', '555-0129', 'Appendicitis', 'YES', 'DR_VERMA'),
+('Jennifer Wilson', '555-0130', 'Common Cold', 'NO', 'DR_VERMA');
+
+-- Step 4: Display the inserted data to verify
+SELECT 'Sample Data Successfully Inserted' AS STATUS;
+SELECT * FROM Patient_Records ORDER BY Assigned_Doctor, Is_Critical DESC;
+
+-- =====================================================
+-- ROLE-BASED ACCESS CONTROL (RBAC) IMPLEMENTATION
+-- =====================================================
+
+-- Step 5: Create custom roles for the doctors
+CREATE ROLE IF NOT EXISTS DR_SMITH;
+CREATE ROLE IF NOT EXISTS DR_VERMA;
+
+-- Step 6: Create users in Snowflake
+CREATE USER IF NOT EXISTS DRSMITH_USER
+    PASSWORD = 'Smith_SecurePass123!'
+    DEFAULT_ROLE = DR_SMITH
+    DEFAULT_WAREHOUSE = COMPUTE_WH
+    DEFAULT_NAMESPACE = HOSPITAL_MANAGEMENT.PATIENT_DATA
+    COMMENT = 'User account for Dr. Smith';
+
+CREATE USER IF NOT EXISTS DRVERMA_USER
+    PASSWORD = 'Verma_SecurePass123!'
+    DEFAULT_ROLE = DR_VERMA
+    DEFAULT_WAREHOUSE = COMPUTE_WH
+    DEFAULT_NAMESPACE = HOSPITAL_MANAGEMENT.PATIENT_DATA
+    COMMENT = 'User account for Dr. Verma';
+
+-- Step 7: Grant roles to users
+GRANT ROLE DR_SMITH TO USER DRSMITH_USER;
+GRANT ROLE DR_VERMA TO USER DRVERMA_USER;
+
+-- Step 8: Grant minimum required privileges to roles
+-- Database level privileges
+GRANT USAGE ON DATABASE HOSPITAL_MANAGEMENT TO ROLE DR_SMITH;
+GRANT USAGE ON DATABASE HOSPITAL_MANAGEMENT TO ROLE DR_VERMA;
+
+-- Schema level privileges
+GRANT USAGE ON SCHEMA HOSPITAL_MANAGEMENT.PATIENT_DATA TO ROLE DR_SMITH;
+GRANT USAGE ON SCHEMA HOSPITAL_MANAGEMENT.PATIENT_DATA TO ROLE DR_VERMA;
+
+-- Table level privileges (minimum required)
+GRANT SELECT ON TABLE HOSPITAL_MANAGEMENT.PATIENT_DATA.Patient_Records TO ROLE DR_SMITH;
+GRANT SELECT ON TABLE HOSPITAL_MANAGEMENT.PATIENT_DATA.Patient_Records TO ROLE DR_VERMA;
+
+GRANT INSERT ON TABLE HOSPITAL_MANAGEMENT.PATIENT_DATA.Patient_Records TO ROLE DR_SMITH;
+GRANT INSERT ON TABLE HOSPITAL_MANAGEMENT.PATIENT_DATA.Patient_Records TO ROLE DR_VERMA;
+
+GRANT UPDATE ON TABLE HOSPITAL_MANAGEMENT.PATIENT_DATA.Patient_Records TO ROLE DR_SMITH;
+GRANT UPDATE ON TABLE HOSPITAL_MANAGEMENT.PATIENT_DATA.Patient_Records TO ROLE DR_VERMA;
+
+-- Warehouse privileges (required for query execution)
+GRANT USAGE ON WAREHOUSE COMPUTE_WH TO ROLE DR_SMITH;
+GRANT USAGE ON WAREHOUSE COMPUTE_WH TO ROLE DR_VERMA;
+
+-- =====================================================
+-- TASK 2: IMPLEMENTING ROW-LEVEL SECURITY (RLS)
+-- =====================================================
+
+-- Step 9: Create Row Access Policy for Patient_Records table
+-- This policy filters rows based on the Assigned_Doctor column
+CREATE OR REPLACE ROW ACCESS POLICY doctor_patient_access_policy AS (Assigned_Doctor) RETURNS BOOLEAN ->
+  CASE 
+    -- Allow ACCOUNTADMIN unrestricted access to all records
+    WHEN IS_ROLE_IN_SESSION('ACCOUNTADMIN') THEN TRUE
+    
+    -- Allow DR_SMITH to see only their assigned patients
+    WHEN CURRENT_ROLE() = 'DR_SMITH' AND Assigned_Doctor = 'DR_SMITH' THEN TRUE
+    
+    -- Allow DR_VERMA to see only their assigned patients  
+    WHEN CURRENT_ROLE() = 'DR_VERMA' AND Assigned_Doctor = 'DR_VERMA' THEN TRUE
+    
+    -- Deny access for all other cases
+    ELSE FALSE
+  END;
+
+  issue --Missing data type for argument 'ASSIGNED_DOCTOR'
+
+
+  fix ---
+  CREATE OR REPLACE ROW ACCESS POLICY doctor_patient_access_policy AS (Assigned_Doctor VARCHAR) RETURNS BOOLEAN ->
+  CASE 
+    -- Allow ACCOUNTADMIN unrestricted access to all records
+    WHEN IS_ROLE_IN_SESSION('ACCOUNTADMIN') THEN TRUE
+    
+    -- Allow DR_SMITH to see only their assigned patients
+    WHEN CURRENT_ROLE() = 'DR_SMITH' AND Assigned_Doctor = 'DR_SMITH' THEN TRUE
+    
+    -- Allow DR_VERMA to see only their assigned patients  
+    WHEN CURRENT_ROLE() = 'DR_VERMA' AND Assigned_Doctor = 'DR_VERMA' THEN TRUE
+    
+    -- Deny access for all other cases
+    ELSE FALSE
+  END;
+
+
+-- Step 10: Apply the Row Access Policy to the Patient_Records table
+ALTER TABLE Patient_Records ADD ROW ACCESS POLICY doctor_patient_access_policy ON (Assigned_Doctor);
+
+-- Step 11: Verify the policy has been applied successfully
+SHOW ROW ACCESS POLICIES;
+
+
+- Show roles and their privileges
+SHOW GRANTS TO ROLE DR_SMITH;
+SHOW GRANTS TO ROLE DR_VERMA;
+
+
+-- Show users and their default roles
+SHOW USERS LIKE 'DRSMITH_USER';
+SHOW USERS LIKE 'DRVERMA_USER';
+
+
+-- Step 14: Critical patients summary
+SELECT 'Critical Patients Summary' AS STATUS;
+SELECT 
+    Assigned_Doctor,
+    COUNT(*) as Total_Patients,
+    SUM(CASE WHEN Is_Critical = 'YES' THEN 1 ELSE 0 END) as Critical_Patients,
+    SUM(CASE WHEN Is_Critical = 'NO' THEN 1 ELSE 0 END) as Non_Critical_Patients
+FROM Patient_Records 
+GROUP BY Assigned_Doctor;
+
+
+-- =====================================================
+-- TESTING ROW-LEVEL SECURITY IMPLEMENTATION
+-- =====================================================
+
+-- Step 15: Test RLS functionality with different roles
+
+-- Test 1: View all records as ACCOUNTADMIN (should see all patients)
+
+
+GRANT ROLE DR_SMITH TO USER MADHAV;
+GRANT ROLE DR_VERMA TO USER MADHAV;  
+---for testing pupose i assigned role to my user
+SELECT 'Testing ACCOUNTADMIN access - Should see ALL patients:' AS TEST_DESCRIPTION;
+ USE ROLE ACCOUNTADMIN;
+ SELECT Patient_ID, Patient_Name, Assigned_Doctor, Is_Critical FROM Patient_Records ORDER BY Assigned_Doctor;
+
+-- Test 2: View records as DR_SMITH (should only see DR_SMITH patients)
+SELECT 'Testing DR_SMITH access - Should see only DR_SMITH patients:' AS TEST_DESCRIPTION;
+ USE ROLE DR_SMITH;
+SELECT Patient_ID, Patient_Name, Assigned_Doctor, Is_Critical FROM Patient_Records ORDER BY Patient_ID;
+--Requested role 'DR_SMITH' is not assigned to the executing user.  Specify another role to activate.
+-- Test 3: View records as DR_VERMA (should only see DR_VERMA patients)
+SELECT 'Testing DR_VERMA access - Should see only DR_VERMA patients:' AS TEST_DESCRIPTION;
+USE ROLE DR_VERMA;
+SELECT Patient_ID, Patient_Name, Assigned_Doctor, Is_Critical FROM Patient_Records ORDER BY Patient_ID;
+
+SELECT CURRENT_DATABASE() as Current_Database, 
+       CURRENT_SCHEMA() as Current_Schema,
+       CURRENT_ROLE() as Current_Role,
+       CURRENT_USER() as Current_User;
+
+
+CREATE OR REPLACE FUNCTION test_rls_access(test_role VARCHAR)
+RETURNS TABLE (
+    Patient_ID INT,
+    Patient_Name VARCHAR,
+    Assigned_Doctor VARCHAR,
+    Is_Critical VARCHAR,
+    Diagnoses VARCHAR
+)
+AS
+$$
+    SELECT 
+        Patient_ID, 
+        Patient_Name, 
+        Assigned_Doctor, 
+        Is_Critical,
+        'CRITICAL' AS Diagnoses
+    FROM Patient_Records
+    WHERE 
+        Is_Critical = 'YES' AND
+        (
+            test_role = 'ACCOUNTADMIN' OR
+            (test_role = 'DR_SMITH' AND Assigned_Doctor = 'DR_SMITH') OR
+            (test_role = 'DR_VERMA' AND Assigned_Doctor = 'DR_VERMA')
+        )
+    ORDER BY Patient_ID
+$$;
+
+
+
+
+
+
+SELECT * FROM TABLE(test_rls_access('DR_VERMA'));
+
+
+
+---------------------------DDM-----------------------------
+
+CREATE OR REPLACE MASKING POLICY mask_phone_number 
+AS (val STRING, doctor STRING)
+RETURNS STRING ->
+  CASE 
+    WHEN CURRENT_ROLE() = 'ACCOUNTADMIN' THEN val
+    WHEN CURRENT_ROLE() = doctor THEN val
+    ELSE 'XXX-XXX-XXXX'
+  END;
+
+--Create Masking Policy for Diagnosis
+
+CREATE OR REPLACE MASKING POLICY mask_diagnosis 
+AS (val STRING, critical_flag STRING)
+RETURNS STRING ->
+  CASE 
+    WHEN CURRENT_ROLE() = 'ACCOUNTADMIN' THEN val
+    WHEN critical_flag = 'YES' THEN 'CRITICAL'
+    ELSE val
+  END;
+
+-----------------------------------------Attach Policies to Columns in Patient_Records--------------
+
+ALTER TABLE Patient_Records 
+MODIFY COLUMN Phone_Number 
+SET MASKING POLICY mask_phone_number 
+USING (Phone_Number, Assigned_Doctor);
+
+USE ROLE READ_ONLY_USER;
+SELECT * FROM Patient_Records;
+
+ALTER TABLE Patient_Records 
+MODIFY COLUMN Diagnosis 
+SET MASKING POLICY mask_diagnosis 
+USING (Diagnosis, Is_Critical);
+
+
+USE ROLE ACCOUNTADMIN;
+SELECT * FROM Patient_Records;
+USE ROLE DR_VERMA;
+SELECT * FROM Patient_Records;
+
+
+ALTER TABLE Patient_Records 
+MODIFY COLUMN Phone_Number 
+UNSET MASKING POLICY;
+
+CREATE OR REPLACE MASKING POLICY mask_phone_number 
+AS (val STRING)
+RETURNS STRING ->
+  CASE 
+    WHEN CURRENT_ROLE() = 'ACCOUNTADMIN' THEN val
+    ELSE 'XXX-XXX-XXXX'
+  END;
+
+
+  ALTER TABLE Patient_Records 
+MODIFY COLUMN Phone_Number 
+SET MASKING POLICY mask_phone_number 
+USING (Phone_Number);
+
+
+
+
+CREATE OR REPLACE MASKING POLICY mask_diagnosis_critical
+AS (val STRING, is_critical STRING)
+RETURNS STRING ->
+  CASE 
+    WHEN CURRENT_ROLE() = 'ACCOUNTADMIN' THEN val
+    WHEN is_critical = 'YES' THEN 'CRITICAL'
+    ELSE val
+  END;
+
+  ALTER TABLE Patient_Records
+MODIFY COLUMN Diagnosis
+SET MASKING POLICY mask_diagnosis_critical
+USING (Diagnosis, Is_Critical);
+
+ALTER TABLE Patient_Records
+MODIFY COLUMN Diagnosis
+UNSET MASKING POLICY;
+ALTER TABLE Patient_Records
+MODIFY COLUMN Diagnosis
+SET MASKING POLICY mask_diagnosis_critical
+USING (Diagnosis, Is_Critical);
+
+
+CREATE OR REPLACE MASKING POLICY mask_diagnosis_critical
+AS (diagnosis STRING, is_critical STRING, assigned_doctor STRING)
+RETURNS STRING ->
+  CASE
+    WHEN CURRENT_ROLE() = 'ACCOUNTADMIN' THEN diagnosis
+    WHEN CURRENT_ROLE() IN ('DR_SMITH', 'DR_VERMA') AND CURRENT_ROLE() = assigned_doctor THEN diagnosis
+    WHEN is_critical = 'YES' THEN 'CRITICAL'
+    ELSE diagnosis
+  END;
+
+
+  ALTER TABLE Patient_Records
+MODIFY COLUMN Diagnosis
+UNSET MASKING POLICY;
+
+ALTER TABLE Patient_Records
+MODIFY COLUMN Diagnosis
+SET MASKING POLICY mask_diagnosis_critical
+USING (Diagnosis, Is_Critical, Assigned_Doctor);
+
